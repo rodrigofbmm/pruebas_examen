@@ -13,6 +13,7 @@ const Header: FunctionComponent = () => {
           <li><a href="/staff2">Staff Islas</a></li>
           <li><a href="/search">buscador</a></li>
           <li><a href="/favorites">favoritos</a></li>
+          <li><a href="/?logout=1">Cerrar sesión</a></li> {/* Aquí está el logout */}
         </ul>
       </nav>
     </header>
