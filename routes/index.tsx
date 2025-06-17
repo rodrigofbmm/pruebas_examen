@@ -32,7 +32,7 @@ export default function Home() {
   );
 }
   
-*/
+
 // routes/index.tsx
 import { FreshContext, Handlers, PageProps } from "$fresh/server.ts";
 import LoginFormMongo from "../components/LoginFormMongo.tsx";
@@ -116,7 +116,7 @@ export default function Home(props: PageProps<Data>) {
   );
 }
 
-/*
+*/
 
 // routes/index.tsx
 // routes/index.tsx
@@ -186,4 +186,3 @@ export default function Home(props: PageProps<Data>) {
     </div>
   );
 }
-*/
