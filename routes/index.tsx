@@ -121,8 +121,9 @@ export default function Home(props: PageProps<Data>) {
 // routes/index.tsx
 // routes/index.tsx
 // routes/index.tsx
+// routes/index.tsx
 import { FreshContext, Handlers, PageProps } from "$fresh/server.ts";
-import UsersCollection from "../db/Contacts.ts";
+import { UsersCollection } from "../db/Contacts.ts";
 import LoginFormMongo from "../components/LoginFormMongo.tsx";
 
 interface Data {
@@ -131,46 +132,51 @@ interface Data {
 
 export const handler: Handlers<Data> = {
   async POST(req: Request, ctx: FreshContext<unknown, Data>) {
-    const url = new URL(req.url);
-    const type = url.searchParams.get("type");
+    try {
+      const url = new URL(req.url);
+      const type = url.searchParams.get("type");
 
-    const form = await req.formData();
-    const username = form.get("username")?.toString();
-    const password = form.get("password")?.toString();
+      const form = await req.formData();
+      const username = form.get("username")?.toString();
+      const password = form.get("password")?.toString();
 
-    if (!username || !password) {
-      return ctx.render({ error: "Faltan datos" });
-    }
-
-    const user = await UsersCollection.findOne({ username });
-
-    if (type === "login") {
-      if (!user || user.password !== password) {
-        return ctx.render({ error: "Credenciales incorrectas" });
+      if (!username || !password) {
+        return ctx.render({ error: "Faltan datos" });
       }
 
-      const headers = new Headers();
-      headers.append("Set-Cookie", `name=${username}; Path=/`);
-      headers.set("location", "/characters");
+      const user = await UsersCollection.findOne({ username });
 
-      return new Response(null, { status: 302, headers });
-    }
+      if (type === "login") {
+        if (!user || user.password !== password) {
+          return ctx.render({ error: "Credenciales incorrectas" });
+        }
 
-    if (type === "register") {
-      if (user) {
-        return ctx.render({ error: "El usuario ya existe" });
+        const headers = new Headers();
+        headers.append("Set-Cookie", `name=${username}; Path=/`);
+        headers.set("location", "/characters");
+
+        return new Response(null, { status: 302, headers });
       }
 
-      await UsersCollection.insertOne({ username, password });
+      if (type === "register") {
+        if (user) {
+          return ctx.render({ error: "El usuario ya existe" });
+        }
 
-      const headers = new Headers();
-      headers.append("Set-Cookie", `name=${username}; Path=/`);
-      headers.set("location", "/characters");
+        await UsersCollection.insertOne({ username, password });
 
-      return new Response(null, { status: 302, headers });
+        const headers = new Headers();
+        headers.append("Set-Cookie", `name=${username}; Path=/`);
+        headers.set("location", "/characters");
+
+        return new Response(null, { status: 302, headers });
+      }
+
+      return ctx.render({ error: "Operación no válida" });
+    } catch (error) {
+      console.error("Database error:", error);
+      return ctx.render({ error: "Error de conexión a la base de datos" });
     }
-
-    return ctx.render({ error: "Operación no válida" });
   },
 
   GET(_req, ctx) {
