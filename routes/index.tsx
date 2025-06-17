@@ -122,6 +122,7 @@ export default function Home(props: PageProps<Data>) {
 // routes/index.tsx
 // routes/index.tsx
 // routes/index.tsx
+// routes/index.tsx
 import { FreshContext, Handlers, PageProps } from "$fresh/server.ts";
 import { UsersCollection } from "../db/Contacts.ts";
 import LoginFormMongo from "../components/LoginFormMongo.tsx";
@@ -135,7 +136,6 @@ export const handler: Handlers<Data> = {
     try {
       const url = new URL(req.url);
       const type = url.searchParams.get("type");
-
       const form = await req.formData();
       const username = form.get("username")?.toString();
       const password = form.get("password")?.toString();
@@ -150,11 +150,9 @@ export const handler: Handlers<Data> = {
         if (!user || user.password !== password) {
           return ctx.render({ error: "Credenciales incorrectas" });
         }
-
         const headers = new Headers();
         headers.append("Set-Cookie", `name=${username}; Path=/`);
         headers.set("location", "/characters");
-
         return new Response(null, { status: 302, headers });
       }
 
@@ -162,13 +160,10 @@ export const handler: Handlers<Data> = {
         if (user) {
           return ctx.render({ error: "El usuario ya existe" });
         }
-
         await UsersCollection.insertOne({ username, password });
-
         const headers = new Headers();
         headers.append("Set-Cookie", `name=${username}; Path=/`);
         headers.set("location", "/characters");
-
         return new Response(null, { status: 302, headers });
       }
 
@@ -179,7 +174,16 @@ export const handler: Handlers<Data> = {
     }
   },
 
-  GET(_req, ctx) {
+  GET(req, ctx) {
+    const url = new URL(req.url);
+    if (url.searchParams.get("logout")) {
+      const headers = new Headers();
+      headers.append("Set-Cookie", "token=; Path=/; Max-Age=0");
+      headers.append("Set-Cookie", "name=; Path=/; Max-Age=0");
+      headers.set("location", "/");
+      return new Response(null, { status: 302, headers });
+    }
+
     return ctx.render({});
   },
 };
